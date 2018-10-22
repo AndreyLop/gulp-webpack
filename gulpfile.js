@@ -1,7 +1,6 @@
 var gulp = require('gulp'),
   rename = require('gulp-rename'),
   uglify = require('gulp-uglify'),
-  webpack = require('webpack'),
   webpackStream = require('webpack-stream'),
   sass = require('gulp-sass'),
   autoprefixer   = require('gulp-autoprefixer'),
@@ -13,6 +12,7 @@ var gulp = require('gulp'),
 gulp.task('js', function () {
   return gulp.src('./src/js/app.js')
     .pipe(webpackStream({
+      mode: 'development',
       output: {
         filename: 'app.js',
       },
@@ -32,7 +32,8 @@ gulp.task('js', function () {
     .pipe(gulp.dest('./dist/js/'))
     .pipe(uglify())
     .pipe(rename({ suffix: '.min' }))
-    .pipe(gulp.dest('./dist/js/'));
+    .pipe(gulp.dest('./dist/js/'))
+    .pipe(browserSync.reload({stream: true}));
 });
 
 // SASS to CSS
@@ -41,7 +42,7 @@ gulp.task('sass', function() {
 	.pipe(sass({outputStyle: 'expand'}).on("error", notify.onError()))
 	.pipe(rename({suffix: '.min', prefix : ''}))
 	.pipe(autoprefixer(['last 15 versions']))
-	.pipe(cleanCSS()) // Опционально, закомментировать при отладке
+	.pipe(cleanCSS())
 	.pipe(gulp.dest('dist/css'))
 	.pipe(browserSync.reload({stream: true}));
 });
@@ -50,14 +51,14 @@ gulp.task('sass', function() {
 gulp.task('browser-sync', function() {
 	browserSync({
 		//proxy: "http://localhost:80/academkvartal/dist",
-		proxy: "academkvartal/dist",
-    	notify: false // Отключаем уведомления
+		proxy: "supersite/dist",
+    	notify: false
 	});
 });
 
 gulp.task('watch', ['sass', 'js', 'browser-sync'], function() {
 	gulp.watch('src/sass/**/*.scss', ['sass']);
-	gulp.watch(['libs/**/*.js', 'src/**/*.js'], ['js']);
+	gulp.watch('src/**/*.js', ['js']);
 	gulp.watch('dist/**/*.php', browserSync.reload);
 	gulp.watch('dist/*.html', browserSync.reload);
 });
